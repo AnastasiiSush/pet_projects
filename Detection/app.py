@@ -25,7 +25,7 @@ page = st.sidebar.radio(
 )
 
 def handle_image_inputs(key_prefix):
-    source = st.radio("Source:" ["Upload photo", "Camera"], horizontal=True, key=f"{key_prefix}_src")
+    source = st.radio("Source:", ["Upload photo", "Camera"], horizontal=True, key=f"{key_prefix}_src")
     if source == "Upload photo":
         file = st.file_uploader("Choose a file", type=["jpg", "png", "jpeg"], key=f"{key_prefix}_file")
         if file:
