@@ -4,6 +4,7 @@ from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import cv2
 import numpy as np
 from PIL import Image
+
 from road_detector import load_segformer_model, processor_segmentation
 from live_detector import load_yolo_model, process_detection
 
@@ -19,7 +20,7 @@ def get_segformer():
 
 st.sidebar.title("Menu")
 page = st.sidebar.radio(
-    "Choose a window :",
+    "Choose a window:",
     [
         "1. FAQ",
         "2. Live detection",
@@ -27,11 +28,10 @@ page = st.sidebar.radio(
     ]
 )
 
-
 def handle_image_inputs(key_prefix):
     source = st.radio(
         "Source:",
-        ["Upload photo", "Camera (Snapshot)", "Live Stream (WebRTC)"],
+        ["Upload photo", "Camera", "Live Stream"],
         horizontal=True,
         key=f"{key_prefix}_src"
     )
@@ -41,12 +41,12 @@ def handle_image_inputs(key_prefix):
         if file:
             return "static", Image.open(file).convert("RGB")
 
-    elif source == "Camera (Snapshot)":
+    elif source == "Camera":
         cam = st.camera_input("Take a picture", key=f"{key_prefix}_cam")
         if cam:
             return "static", Image.open(cam).convert("RGB")
 
-    elif source == "Live Stream (WebRTC)":
+    elif source == "Live Stream":
         return "stream", None
 
     return None, None
@@ -64,15 +64,14 @@ def segformer_video_callback(frame: av.VideoFrame) -> av.VideoFrame:
     return av.VideoFrame.from_ndarray(processed_bgr, format="bgr24")
 
 if page == "1. FAQ":
-    st.title("Live detection")
+    st.title("ℹ️ FAQ & Info")
     st.markdown("""
-        * **Live detection:** Детекція людей та тварин за допомогою YOLOv8.
-        * **Road segmentation:** Сегментація дорожньої інфраструктури за допомогою SegFormer.
-        * **Джерела даних:** Підтримується завантаження фото, фотознімок з камери та живий відеопотік (WebRTC).
-        """)
+    * **Live detection:** Detection of humans and animals.
+    * **Road segmentation:** Segmentation of road, pedestrians and .
+    """)
 
 elif page == "2. Live detection":
-    st.title("Live detection")
+    st.title("🐶 Live Detection (YOLOv8)")
     mode, image_or = handle_image_inputs("det")
 
     if mode == "static" and image_or:
@@ -80,7 +79,7 @@ elif page == "2. Live detection":
         col1.subheader("Original Image")
         col1.image(image_or, use_container_width=True)
 
-        with st.spinner("Processing"):
+        with st.spinner("Processing..."):
             yolo_model = get_yolo()
             frame_bgr = cv2.cvtColor(np.array(image_or), cv2.COLOR_RGB2BGR)
             processed_bgr = process_detection(frame_bgr, yolo_model)
@@ -101,7 +100,7 @@ elif page == "2. Live detection":
         )
 
 elif page == "3. Road segmentation":
-    st.title("Segmentation")
+    st.title("🛣️ Road Segmentation (SegFormer)")
     mode, image = handle_image_inputs("seg")
 
     if mode == "static" and image:
@@ -109,7 +108,7 @@ elif page == "3. Road segmentation":
         col1.subheader("Original Image")
         col1.image(image, use_container_width=True)
 
-        with st.spinner("Processing"):
+        with st.spinner("Processing..."):
             processor, seg_model = get_segformer()
             frame_bgr = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
             processed_bgr = processor_segmentation(frame_bgr, processor, seg_model)
@@ -117,6 +116,7 @@ elif page == "3. Road segmentation":
 
         col2.subheader("Result")
         col2.image(processed_rgb, use_container_width=True)
+
     elif mode == "stream":
         st.subheader("Real-Time Camera Stream")
         webrtc_streamer(
