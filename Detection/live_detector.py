@@ -3,7 +3,7 @@ import numpy as np
 from ultralytics import YOLO
 
 HUMAN_CLASSES = [0]
-ANIMAL_CLASSES = [15, 16, 17, 18, 19, 20, 21, 22, 23]
+ANIMAL_CLASSES = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
 ALL_TARGETS = HUMAN_CLASSES + ANIMAL_CLASSES
 
 def load_yolo_model():
@@ -35,12 +35,13 @@ def process_detection(frame:np.ndarray, model) -> np.ndarray:
             label = f"Animal ({animal_type}): {round(confidence * 100, 1)}%"
             color = (76, 0, 135)
 
-        cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-        cv2.putText(frame, label, (x1, max(y1 - 10, 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        cv2.rectangle(output_frame, (x1, y1), (x2, y2), color, 2)
+        cv2.putText(output_frame, label, (x1, max(y1 - 10, 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
     return output_frame
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    model = load_yolo_model()
     model = load_yolo_model()
     while cap.isOpened():
         ret, frame = cap.read()
